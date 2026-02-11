@@ -2,7 +2,8 @@ import Form from "./components/Form";
 
 export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen bg-gray-100">
+      {/* Form will handle its own padding and centering */}
       <Form />
     </div>
   );
