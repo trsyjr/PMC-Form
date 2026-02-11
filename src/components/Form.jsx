@@ -1,119 +1,190 @@
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Input from "./Input";
 import Navbar from "./Navbar";
 import { Section, Navigation } from "./FormHelper";
 import DABG from "../assets/DABG.png";
+import "./shake.css";
 
 const Form = () => {
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [step, setStep] = useState(0);
+  const [submittedStep, setSubmittedStep] = useState(0);
 
-  // Dropdown states
-  const [requestType, setRequestType] = useState("");
-  const [requestTypeOther, setRequestTypeOther] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
+  // Step 1
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [requestType, setRequestType] = useState([]);
+  const [agencyName, setAgencyName] = useState("");
   const [agencyType, setAgencyType] = useState("");
-  const [agencyTypeOther, setAgencyTypeOther] = useState("");
 
+  // Step 2
+  const [region, setRegion] = useState("");
+  const [province, setProvince] = useState("");
+  const [lgu, setLgu] = useState("");
+  const [addressee, setAddressee] = useState("");
+  const [position, setPosition] = useState("");
+  const [address, setAddress] = useState("");
+  const [letterFile, setLetterFile] = useState(null);
+
+  const shakeClass = "shake border-red-500";
   const totalSteps = 3;
+
+  const validateStep = useCallback(() => {
+    if (step === 0) return privacyAccepted;
+    if (step === 1)
+      return (
+        fullName.trim() &&
+        email.trim() &&
+        contactNumber.trim() &&
+        requestType.length > 0 &&
+        agencyName.trim() &&
+        agencyType.trim()
+      );
+    if (step === 2)
+      return (
+        region.trim() &&
+        province.trim() &&
+        lgu.trim() &&
+        addressee.trim() &&
+        position.trim() &&
+        address.trim() &&
+        letterFile
+      );
+    return true;
+  }, [step, privacyAccepted, fullName, email, contactNumber, requestType, agencyName, agencyType, region, province, lgu, addressee, position, address, letterFile]);
+
+  const handleNext = useCallback(() => {
+    setSubmittedStep(step + 1);
+    if (validateStep()) setStep(step + 1);
+  }, [step, validateStep]);
+
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+    setSubmittedStep(step + 1);
+    if (validateStep()) {
+      alert("Form submitted!");
+    }
+  }, [step, validateStep]);
+
+  const handleBack = useCallback(() => setStep(step - 1), [step]);
 
   return (
     <>
-      <Navbar step={step} totalSteps={totalSteps} />
+      <Navbar step={step} totalSteps={totalSteps} privacyAccepted={privacyAccepted} />
 
       <div className="min-h-screen relative">
-        {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${DABG})` }}
         />
-        {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/20"></div>
 
         <div className="relative min-h-screen flex justify-center pt-[220px] pb-10 px-6">
           <div className="w-full max-w-6xl">
 
-            {/* STEP 0 – DATA PRIVACY */}
+            {/* STEP 0 */}
             {step === 0 && (
-              <section className="max-w-md mx-auto space-y-6 animate-fadeIn flex flex-col items-center bg-white p-6 rounded-xl shadow-lg">
+              <section className="max-w-2xl mx-auto space-y-6 flex flex-col items-center bg-white p-6 rounded-xl shadow-lg">
                 <h2 className="text-center text-[#2e3192] font-bold text-2xl">
                   Data Privacy Consent
                 </h2>
-
+                <p> By checking the box below, you consent to the collection, use, and processing of your personal data in accordance with the Data Privacy Act. </p>
+                <p className="mt-2"> This information will be used solely for the purposes of processing your request and will not be shared without your consent. </p>
                 <Input
                   type="checkbox"
                   label="I consent to the collection and processing of my personal data in accordance with the Data Privacy Act."
-                  name="dataPrivacy"
-                  required
+                  value={privacyAccepted}
                   onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                  className={`w-full ${submittedStep >= 1 && !privacyAccepted ? shakeClass : ""}`}
+                  name="privacy_consent_unique"
+                  autoComplete="off"
                 />
 
                 <button
                   disabled={!privacyAccepted}
-                  onClick={() => setStep(1)}
-                  className={`px-10 py-3 rounded-xl font-medium transition
-                    ${
-                      privacyAccepted
-                        ? "bg-[#2e3192] text-white hover:bg-[#1f2170]"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                  onClick={handleNext}
+                  className={`px-10 py-3 rounded-xl font-medium transition ${
+                    privacyAccepted
+                      ? "bg-[#2e3192] text-white hover:bg-[#1f2170]"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
                 >
                   Continue
                 </button>
               </section>
             )}
 
-            {/* STEP 1 – PERSONAL + TYPE OF REQUEST + AGENCY */}
+            {/* STEP 1 */}
             {step === 1 && (
-              <section className="space-y-10 animate-slideUp bg-white p-6 rounded-xl shadow-lg">
-
-                <Section title="PRE-MARRIAGE COUNCELING FORM">
-                  <Input label="Full Name" name="fullName" required />
-                  <Input label="Email Address" type="email" name="email" required />
-                  <Input label="Contact Number" name="contactNumber" />
+              <section className="space-y-10 bg-white p-6 rounded-xl shadow-lg">
+                <Section title="PRE-MARRIAGE COUNSELING FORM">
+                  <Input
+                    label="Full Name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Ex. Juan R. Dela Cruz"
+                    className={submittedStep >= 2 && !fullName ? shakeClass : ""}
+                    name="full_name_unique"
+                    autoComplete="new-name"
+                  />
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Ex. xxxx@example.com"
+                    className={submittedStep >= 2 && !email ? shakeClass : ""}
+                    name="email_unique"
+                    autoComplete="new-email"
+                  />
+                  <Input
+                    label="Contact Number"
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    placeholder="Ex. 09XX-XXXX-XXXXX"
+                    className={submittedStep >= 2 && !contactNumber ? shakeClass : ""}
+                    name="contact_unique"
+                    autoComplete="new-tel"
+                  />
                 </Section>
 
                 <Section title="Type of Request">
-                  <Input
-                    type="select"
-                    label="Type of Request"
-                    name="requestType"
-                    options={[
-                      { value: "Inclusion", label: "Inclusion" },
-                      { value: "Localized", label: "Localized" },
-                      { value: "Accreditation", label: "Accreditation" },
-                      { value: "Others", label: "Others" }
-                    ]}
-                    value={requestType}
-                    onChange={(e) => setRequestType(e.target.value)}
-                  />
-                  {requestType === "Others" && (
-                    <Input
-                      label="Please specify"
-                      name="requestTypeOther"
-                      value={requestTypeOther}
-                      onChange={(e) => setRequestTypeOther(e.target.value)}
-                    />
-                  )}
-
-                  <Input
-                    type="select"
-                    label="Accreditation Status"
-                    name="accreditationStatus"
-                    options={[
-                      { value: "For Accreditation", label: "For Accreditation" },
-                      { value: "For Renewal", label: "For Renewal" },
-                      { value: "Not Applicable", label: "Not Applicable" }
-                    ]}
-                  />
+                  <div className={`flex flex-wrap gap-6 ${submittedStep >= 2 && requestType.length === 0 ? shakeClass : ""}`}>
+                    {["Inclusion", "Localized"].map((option) => (
+                      <label key={option} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          value={option}
+                          checked={requestType.includes(option)}
+                          onChange={(e) => {
+                            if (e.target.checked) setRequestType([...requestType, option]);
+                            else setRequestType(requestType.filter((i) => i !== option));
+                          }}
+                          className="w-4 h-4 accent-[#2e3192]"
+                        />
+                        <span>{option}</span>
+                      </label>
+                    ))}
+                  </div>
                 </Section>
 
                 <Section title="Agency / Organization">
-                  <Input label="Name of Agency / Organization" name="agencyName" />
                   <Input
-                    type="select"
+                    label="Name of Agency / Organization"
+                    value={agencyName}
+                    onChange={(e) => setAgencyName(e.target.value)}
+                    placeholder="Ex. DSWD"
+                    className={submittedStep >= 2 && !agencyName ? shakeClass : ""}
+                    name="agency_name_unique"
+                    autoComplete="new-organization"
+                  />
+                  <Input
                     label="Type of Agency / Organization"
-                    name="agencyType"
+                    type="select"
+                    value={agencyType}
+                    onChange={(e) => setAgencyType(e.target.value)}
                     options={[
                       { value: "DSWD CO", label: "DSWD CO" },
                       { value: "DSWD FO", label: "DSWD FO" },
@@ -123,47 +194,91 @@ const Form = () => {
                       { value: "National Government Agency", label: "National Government Agency" },
                       { value: "Non-Government Organization", label: "Non-Government Organization" },
                       { value: "Religious", label: "Religious" },
-                      { value: "Others", label: "Others" }
+                      { value: "Others", label: "Others" },
                     ]}
-                    value={agencyType}
-                    onChange={(e) => setAgencyType(e.target.value)}
+                    className={submittedStep >= 2 && !agencyType ? shakeClass : ""}
+                    name="agency_type_unique"
+                    autoComplete="new-official"
                   />
-                  {agencyType === "Others" && (
-                    <Input
-                      label="Please specify"
-                      name="agencyTypeOther"
-                      value={agencyTypeOther}
-                      onChange={(e) => setAgencyTypeOther(e.target.value)}
-                    />
-                  )}
                 </Section>
 
-                <Navigation
-                  onBack={() => setStep(0)}
-                  onNext={() => setStep(2)}
-                />
+                <Navigation onBack={handleBack} onNext={handleNext} />
               </section>
             )}
 
-            {/* STEP 2 – LOCATION + LETTER */}
+            {/* STEP 2 */}
             {step === 2 && (
-              <section className="space-y-10 animate-slideUp bg-white p-6 rounded-xl shadow-lg">
+              <section className="space-y-10 bg-white p-6 rounded-xl shadow-lg">
                 <Section title="Location Information">
-                  <Input label="Region" name="region" />
-                  <Input label="Province" name="province" />
-                  <Input label="LGU (Specify)" name="lgu" />
+                  <Input
+                    label="Region"
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    placeholder="Ex. CALABARZON"
+                    className={submittedStep >= 3 && !region ? shakeClass : ""}
+                    name="region_unique"
+                    autoComplete="new-region"
+                  />
+                  <Input
+                    label="Province"
+                    value={province}
+                    onChange={(e) => setProvince(e.target.value)}
+                    placeholder="Ex. Rizal"
+                    className={submittedStep >= 3 && !province ? shakeClass : ""}
+                    name="province_unique"
+                    autoComplete="new-province"
+                  />
+                  <Input
+                    label="LGU (Specify)"
+                    value={lgu}
+                    onChange={(e) => setLgu(e.target.value)}
+                    placeholder="Ex. City of Antipolo"
+                    className={submittedStep >= 3 && !lgu ? shakeClass : ""}
+                    name="lgu_unique"
+                    autoComplete="new-lgu"
+                  />
                 </Section>
 
                 <Section title="Letter Information">
-                  <Input label="Addressee" name="addressee" />
-                  <Input label="Position of Addressee" name="position" />
-                  <Input label="Address" name="address" />
-                  <Input type="file" label="Attach Scanned Letter" name="letterFile" />
+                  <Input
+                    label="Addressee"
+                    value={addressee}
+                    onChange={(e) => setAddressee(e.target.value)}
+                    placeholder="Ex. Pedro S. Paterno"
+                    className={submittedStep >= 3 && !addressee ? shakeClass : ""}
+                    name="addressee_unique"
+                    autoComplete="new-addressee"
+                  />
+                  <Input
+                    label="Position of Addressee"
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value)}
+                    placeholder="Mayor"
+                    className={submittedStep >= 3 && !position ? shakeClass : ""}
+                    name="position_unique"
+                    autoComplete="new-position"
+                  />
+                  <Input
+                    label="Address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Ex. Antipolo City, Rizal"
+                    className={submittedStep >= 3 && !address ? shakeClass : ""}
+                    name="address_unique"
+                    autoComplete="new-address"
+                  />
+                  <Input
+                    type="file"
+                    label="Attach Scanned Letter"
+                    onChange={(e) => setLetterFile(e.target.files[0])}
+                    className={submittedStep >= 3 && !letterFile ? shakeClass : ""}
+                    name="letter_file_unique"
+                  />
                 </Section>
 
                 <div className="flex justify-between pt-6">
                   <button
-                    onClick={() => setStep(1)}
+                    onClick={handleBack}
                     className="px-8 py-3 rounded-xl border border-[#2e3192] text-[#2e3192] hover:bg-[#2e3192] hover:text-white transition"
                   >
                     Back
@@ -171,6 +286,7 @@ const Form = () => {
 
                   <button
                     type="submit"
+                    onClick={handleSubmit}
                     className="px-10 py-3 bg-[#2e3192] text-white rounded-xl hover:bg-[#1f2170] active:scale-95 transition"
                   >
                     Submit Request
