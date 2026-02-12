@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 
 pmc-form-drive-*.json
+.env
