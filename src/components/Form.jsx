@@ -31,6 +31,7 @@ const Form = () => {
   const shakeClass = "shake border-red-500";
   const totalSteps = 3;
 
+  // ---------------- VALIDATION ----------------
   const validateStep = () => {
     if (step === 0) return privacyAccepted;
     if (step === 1)
@@ -62,7 +63,7 @@ const Form = () => {
 
   const handleBack = () => setStep(step - 1);
 
-  // ---------------- HANDLE SUBMIT ----------------
+  // ---------------- SUBMIT ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmittedStep(step + 1);
@@ -86,16 +87,22 @@ const Form = () => {
         address,
       };
 
-      // ---------------- Convert File to Base64 ----------------
+      // ---------------- Convert file to Base64 ----------------
       if (letterFile) {
         const arrayBuffer = await letterFile.arrayBuffer();
-        formData.letterFileBase64 = btoa(
-          new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+        const base64 = btoa(
+          new Uint8Array(arrayBuffer).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ""
+          )
         );
+
+        formData.letterFileBase64 = base64;
         formData.letterFileName = letterFile.name;
         formData.letterFileType = letterFile.type || "application/octet-stream";
       }
 
+      // ---------------- Send to API ----------------
       const res = await fetch("/api/form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,32 +111,30 @@ const Form = () => {
 
       const result = await res.json();
 
-      if (result.success) {
-        alert(`Form submitted successfully! Ticket ID: ${result.id || "N/A"}`);
+      if (!result.success) throw new Error(result.error || "Unknown error");
 
-        // Reset all fields
-        setStep(0);
-        setSubmittedStep(0);
-        setPrivacyAccepted(false);
-        setFullName("");
-        setEmail("");
-        setContactNumber("");
-        setRequestType([]);
-        setAgencyName("");
-        setAgencyType("");
-        setRegion("");
-        setProvince("");
-        setLgu("");
-        setAddressee("");
-        setPosition("");
-        setAddress("");
-        setLetterFile(null);
-      } else {
-        alert("Error submitting form: " + (result.error || "Unknown"));
-      }
+      alert(`Form submitted successfully! Ticket ID: ${result.id || "N/A"}`);
+
+      // ---------------- Reset ----------------
+      setStep(0);
+      setSubmittedStep(0);
+      setPrivacyAccepted(false);
+      setFullName("");
+      setEmail("");
+      setContactNumber("");
+      setRequestType([]);
+      setAgencyName("");
+      setAgencyType("");
+      setRegion("");
+      setProvince("");
+      setLgu("");
+      setAddressee("");
+      setPosition("");
+      setAddress("");
+      setLetterFile(null);
     } catch (err) {
       console.error(err);
-      alert("Form submission failed. Check console.");
+      alert("Error submitting form: " + err.message);
     }
 
     setIsSubmitting(false);
@@ -223,7 +228,11 @@ const Form = () => {
                 </Section>
 
                 <Section title="Type of Request">
-                  <div className={`flex flex-wrap gap-6 ${submittedStep >= 2 && requestType.length === 0 ? shakeClass : ""}`}>
+                  <div
+                    className={`flex flex-wrap gap-6 ${
+                      submittedStep >= 2 && requestType.length === 0 ? shakeClass : ""
+                    }`}
+                  >
                     {["Inclusion", "Localized"].map((option) => (
                       <label key={option} className="flex items-center space-x-2">
                         <input
@@ -233,8 +242,7 @@ const Form = () => {
                           onChange={(e) => {
                             if (e.target.checked)
                               setRequestType([...requestType, option]);
-                            else
-                              setRequestType(requestType.filter((i) => i !== option));
+                            else setRequestType(requestType.filter((i) => i !== option));
                           }}
                           className="w-4 h-4 accent-[#2e3192]"
                         />
@@ -342,6 +350,7 @@ const Form = () => {
                     autoComplete="new-address"
                   />
 
+                  {/* FILE UPLOAD */}
                   <div>
                     <Input
                       type="file"
