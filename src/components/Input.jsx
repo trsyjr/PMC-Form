@@ -1,17 +1,7 @@
 import React, { useRef, useState, memo } from "react";
 
 const Input = memo(
-  ({
-    label,
-    type = "text",
-    name,
-    value,
-    onChange,
-    options = [],
-    className = "",
-    placeholder = "",
-    autoComplete = "off",
-  }) => {
+  ({ label, type = "text", name, value, onChange, options = [], className = "", placeholder = "", autoComplete = "off" }) => {
     const fileInputRef = useRef(null);
     const [isDragOver, setIsDragOver] = useState(false);
 
@@ -27,11 +17,7 @@ const Input = memo(
 
     return (
       <div className={`mb-4 w-full ${className}`}>
-        {label && type !== "checkbox" && (
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            {label}
-          </label>
-        )}
+        {label && type !== "checkbox" && <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>}
 
         {(type === "text" || type === "email" || type === "tel") && (
           <input
@@ -55,9 +41,7 @@ const Input = memo(
           >
             <option value="">Select option</option>
             {options.map((opt, idx) => (
-              <option key={idx} value={opt.value}>
-                {opt.label}
-              </option>
+              <option key={idx} value={opt.value}>{opt.label}</option>
             ))}
           </select>
         )}
@@ -79,18 +63,11 @@ const Input = memo(
           <div className="w-full">
             <div
               onClick={handleClick}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setIsDragOver(true);
-              }}
-              onDragLeave={(e) => {
-                e.preventDefault();
-                setIsDragOver(false);
-              }}
+              onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+              onDragLeave={(e) => { e.preventDefault(); setIsDragOver(false); }}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition 
-                ${isDragOver ? "border-blue-500 bg-blue-50" : "border-slate-300"} 
-                ${className}`}
+              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition
+                ${isDragOver ? "border-blue-500 bg-blue-50" : "border-slate-300"} ${className}`}
             >
               <input
                 type="file"
@@ -99,9 +76,7 @@ const Input = memo(
                 onChange={onChange}
                 className="hidden"
               />
-              <p className="text-sm mt-2">
-                {value ? value.name : "Click to upload or drag & drop a file"}
-              </p>
+              <p className="text-sm mt-2">{value?.name || "Click to upload or drag & drop a file"}</p>
               <p className="text-xs text-gray-500 mt-1">PDF, JPG, PNG (max 10MB)</p>
             </div>
           </div>

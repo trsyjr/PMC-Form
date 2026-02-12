@@ -71,31 +71,46 @@ const Form = () => {
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData();
-      formData.append("fullName", fullName);
-      formData.append("email", email);
-      formData.append("contactNumber", contactNumber);
-      formData.append("requestType", JSON.stringify(requestType));
-      formData.append("agencyName", agencyName);
-      formData.append("agencyType", agencyType);
-      formData.append("region", region);
-      formData.append("province", province);
-      formData.append("lgu", lgu);
-      formData.append("addressee", addressee);
-      formData.append("position", position);
-      formData.append("address", address);
-      if (letterFile) formData.append("letterFile", letterFile); // actual file
+      let letterFileBase64 = null;
+      let letterFileType = null;
+      if (letterFile) {
+        letterFileType = letterFile.type;
+        const reader = new FileReader();
+        letterFileBase64 = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = (err) => reject(err);
+          reader.readAsDataURL(letterFile);
+        });
+      }
 
-      const res = await fetch("/api/form", {
+      const payload = {
+        fullName,
+        email,
+        contactNumber,
+        requestType,
+        agencyName,
+        agencyType,
+        region,
+        province,
+        lgu,
+        addressee,
+        position,
+        address,
+        letterFileBase64,
+        letterFileName: letterFile?.name || "",
+        letterFileType
+      };
+
+      const res = await fetch("YOUR_APPS_SCRIPT_WEBAPP_URL", {
         method: "POST",
-        body: formData, // browser sets Content-Type automatically
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" }
       });
 
       const result = await res.json();
 
       if (res.ok && result.success) {
         alert(`Form submitted successfully! Ticket ID: ${result.id || "N/A"}`);
-        // Reset all fields
         setStep(0);
         setSubmittedStep(0);
         setPrivacyAccepted(false);
@@ -157,9 +172,7 @@ const Form = () => {
                   label="I consent to the collection and processing of my personal data."
                   value={privacyAccepted}
                   onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                  className={`w-full ${
-                    submittedStep >= 1 && !privacyAccepted ? shakeClass : ""
-                  }`}
+                  className={`w-full ${submittedStep >= 1 && !privacyAccepted ? shakeClass : ""}`}
                   name="privacy_consent_unique"
                   autoComplete="off"
                 />
@@ -335,7 +348,6 @@ const Form = () => {
                     autoComplete="new-address"
                   />
 
-                  {/* FILE UPLOAD */}
                   <div>
                     <Input
                       type="file"
