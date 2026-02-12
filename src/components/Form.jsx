@@ -53,7 +53,23 @@ const Form = () => {
         letterFile
       );
     return true;
-  }, [step, privacyAccepted, fullName, email, contactNumber, requestType, agencyName, agencyType, region, province, lgu, addressee, position, address, letterFile]);
+  }, [
+    step,
+    privacyAccepted,
+    fullName,
+    email,
+    contactNumber,
+    requestType,
+    agencyName,
+    agencyType,
+    region,
+    province,
+    lgu,
+    addressee,
+    position,
+    address,
+    letterFile,
+  ]);
 
   const handleNext = useCallback(() => {
     setSubmittedStep(step + 1);
@@ -71,7 +87,6 @@ const Form = () => {
       setIsSubmitting(true);
 
       try {
-        // Prepare form data
         const formData = {
           fullName,
           email,
@@ -88,7 +103,6 @@ const Form = () => {
           letterFile: letterFile ? { name: letterFile.name } : null,
         };
 
-        // Send to Vercel API
         const res = await fetch("/api/form", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -97,9 +111,9 @@ const Form = () => {
 
         const result = await res.json();
 
-        if (result.success) {
+        if (res.ok && result.success) {
           alert("Form submitted successfully!");
-          // Reset all fields if needed
+          // reset all fields
           setStep(0);
           setSubmittedStep(0);
           setPrivacyAccepted(false);
@@ -117,7 +131,7 @@ const Form = () => {
           setAddress("");
           setLetterFile(null);
         } else {
-          alert("Error submitting form: " + result.error);
+          alert("Error submitting form: " + (result.error || "Unknown error"));
         }
       } catch (err) {
         console.error(err);
@@ -158,15 +172,20 @@ const Form = () => {
 
         <div className="relative min-h-screen flex justify-center pt-[220px] pb-10 px-6">
           <div className="w-full max-w-6xl">
-
             {/* STEP 0 */}
             {step === 0 && (
               <section className="max-w-2xl mx-auto space-y-6 flex flex-col items-center bg-white p-6 rounded-xl shadow-lg">
                 <h2 className="text-center text-[#2e3192] font-bold text-2xl">
                   Data Privacy Consent
                 </h2>
-                <p>By checking the box below, you consent to the collection, use, and processing of your personal data in accordance with the Data Privacy Act.</p>
-                <p className="mt-2">This information will be used solely for the purposes of processing your request and will not be shared without your consent.</p>
+                <p>
+                  By checking the box below, you consent to the collection, use, and
+                  processing of your personal data in accordance with the Data Privacy Act.
+                </p>
+                <p className="mt-2">
+                  This information will be used solely for the purposes of processing
+                  your request and will not be shared without your consent.
+                </p>
 
                 <Input
                   type="checkbox"
@@ -227,7 +246,11 @@ const Form = () => {
                 </Section>
 
                 <Section title="Type of Request">
-                  <div className={`flex flex-wrap gap-6 ${submittedStep >= 2 && requestType.length === 0 ? shakeClass : ""}`}>
+                  <div
+                    className={`flex flex-wrap gap-6 ${
+                      submittedStep >= 2 && requestType.length === 0 ? shakeClass : ""
+                    }`}
+                  >
                     {["Inclusion", "Localized"].map((option) => (
                       <label key={option} className="flex items-center space-x-2">
                         <input
@@ -235,7 +258,8 @@ const Form = () => {
                           value={option}
                           checked={requestType.includes(option)}
                           onChange={(e) => {
-                            if (e.target.checked) setRequestType([...requestType, option]);
+                            if (e.target.checked)
+                              setRequestType([...requestType, option]);
                             else setRequestType(requestType.filter((i) => i !== option));
                           }}
                           className="w-4 h-4 accent-[#2e3192]"
@@ -365,14 +389,15 @@ const Form = () => {
                     type="submit"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className={`px-10 py-3 bg-[#2e3192] text-white rounded-xl hover:bg-[#1f2170] active:scale-95 transition ${isSubmitting ? "cursor-not-allowed opacity-70" : ""}`}
+                    className={`px-10 py-3 bg-[#2e3192] text-white rounded-xl hover:bg-[#1f2170] active:scale-95 transition ${
+                      isSubmitting ? "cursor-not-allowed opacity-70" : ""
+                    }`}
                   >
                     {isSubmitting ? "Sending..." : "Submit Request"}
                   </button>
                 </div>
               </section>
             )}
-
           </div>
         </div>
       </div>
