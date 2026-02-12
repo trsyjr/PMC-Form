@@ -3,7 +3,6 @@ import Input from "./Input";
 import Navbar from "./Navbar";
 import { Section, Navigation } from "./FormHelper";
 import DABG from "../assets/DABG.png";
-import "./shake.css";
 
 const Form = () => {
   const [step, setStep] = useState(0);
