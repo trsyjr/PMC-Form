@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
     // Google Apps Script URL
     const scriptURL =
-      "https://script.google.com/macros/s/AKfycbzHgyKRCkKY1GUf81hn2dUBwAz5ZBZrrvVV2JNSmVwsjpgt_tmd2IFD3qePqrkaYgqw/exec";
+      "https://script.google.com/macros/s/AKfycbzfh-bAGGyGgwnW49EUnMb1hdEXiqY5qsWA_Xikk3BXp5ivYafbR7i6LzgXnz7nECEB/exec";
 
     const response = await fetch(scriptURL, {
       method: "POST",
@@ -34,12 +34,13 @@ export default async function handler(req, res) {
     const text = await response.text();
     let data;
     try {
-      data = JSON.parse(text);
+    data = JSON.parse(text);
     } catch (err) {
-      console.error("Apps Script returned invalid JSON:", text);
-      return res
-        .status(500)
-        .json({ success: false, error: "Apps Script did not return valid JSON" });
+    console.error("Apps Script returned invalid JSON:", text);
+    return res.status(500).json({
+        success: false,
+        error: "Apps Script did not return valid JSON",
+    });
     }
 
     return res.status(200).json({
