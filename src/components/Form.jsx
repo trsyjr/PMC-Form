@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import Input from "./Input";
 import Navbar from "./Navbar";
 import { Section, Navigation } from "./FormHelper";
@@ -7,7 +7,7 @@ import DABG from "../assets/DABG.png";
 const Form = () => {
   const [step, setStep] = useState(0);
   const [submittedStep, setSubmittedStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false); // loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
@@ -31,7 +31,7 @@ const Form = () => {
   const shakeClass = "shake border-red-500";
   const totalSteps = 3;
 
-  const validateStep = useCallback(() => {
+  const validateStep = () => {
     if (step === 0) return privacyAccepted;
     if (step === 1)
       return (
@@ -53,112 +53,79 @@ const Form = () => {
         letterFile
       );
     return true;
-  }, [
-    step,
-    privacyAccepted,
-    fullName,
-    email,
-    contactNumber,
-    requestType,
-    agencyName,
-    agencyType,
-    region,
-    province,
-    lgu,
-    addressee,
-    position,
-    address,
-    letterFile,
-  ]);
+  };
 
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     setSubmittedStep(step + 1);
     if (validateStep()) setStep(step + 1);
-  }, [step, validateStep]);
+  };
 
-  const handleBack = useCallback(() => setStep(step - 1), [step]);
+  const handleBack = () => setStep(step - 1);
 
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      setSubmittedStep(step + 1);
-      if (!validateStep()) return;
+  // ---------------- HANDLE SUBMIT ----------------
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmittedStep(step + 1);
+    if (!validateStep()) return;
 
-      setIsSubmitting(true);
+    setIsSubmitting(true);
 
-      try {
-        const formData = {
-          fullName,
-          email,
-          contactNumber,
-          requestType,
-          agencyName,
-          agencyType,
-          region,
-          province,
-          lgu,
-          addressee,
-          position,
-          address,
-          letterFile: letterFile ? { name: letterFile.name } : null,
-        };
+    try {
+      const formData = {
+        fullName,
+        email,
+        contactNumber,
+        requestType,
+        agencyName,
+        agencyType,
+        region,
+        province,
+        lgu,
+        addressee,
+        position,
+        address,
+        letterFile: letterFile ? { name: letterFile.name } : null,
+      };
 
-        const res = await fetch("/api/form", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
+      const res = await fetch("/api/form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-        const result = await res.json();
+      const result = await res.json();
 
-        if (res.ok && result.success) {
-          alert("Form submitted successfully!");
-          // reset all fields
-          setStep(0);
-          setSubmittedStep(0);
-          setPrivacyAccepted(false);
-          setFullName("");
-          setEmail("");
-          setContactNumber("");
-          setRequestType([]);
-          setAgencyName("");
-          setAgencyType("");
-          setRegion("");
-          setProvince("");
-          setLgu("");
-          setAddressee("");
-          setPosition("");
-          setAddress("");
-          setLetterFile(null);
-        } else {
-          alert("Error submitting form: " + (result.error || "Unknown error"));
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Error submitting form. Please try again.");
+      if (res.ok && result.success) {
+        alert(`Form submitted successfully! Ticket ID: ${result.id || "N/A"}`);
+        // Reset all fields
+        setStep(0);
+        setSubmittedStep(0);
+        setPrivacyAccepted(false);
+        setFullName("");
+        setEmail("");
+        setContactNumber("");
+        setRequestType([]);
+        setAgencyName("");
+        setAgencyType("");
+        setRegion("");
+        setProvince("");
+        setLgu("");
+        setAddressee("");
+        setPosition("");
+        setAddress("");
+        setLetterFile(null);
+      } else {
+        alert("Error submitting form: " + (result.error || "Unknown"));
       }
+    } catch (err) {
+      console.error(err);
+      alert("Form submission failed. Check console.");
+    }
 
-      setIsSubmitting(false);
-    },
-    [
-      step,
-      validateStep,
-      fullName,
-      email,
-      contactNumber,
-      requestType,
-      agencyName,
-      agencyType,
-      region,
-      province,
-      lgu,
-      addressee,
-      position,
-      address,
-      letterFile,
-    ]
-  );
+    setIsSubmitting(false);
+  };
 
+  // ---------------- RENDER ----------------
   return (
     <>
       <Navbar step={step} totalSteps={totalSteps} privacyAccepted={privacyAccepted} />
