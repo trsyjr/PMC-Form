@@ -101,7 +101,7 @@ const Form = () => {
         letterFileType
       };
 
-      const res = await fetch("YOUR_APPS_SCRIPT_WEBAPP_URL", {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbzHgyKRCkKY1GUf81hn2dUBwAz5ZBZrrvVV2JNSmVwsjpgt_tmd2IFD3qePqrkaYgqw/exec", {
         method: "POST",
         body: JSON.stringify(payload),
         headers: { "Content-Type": "application/json" }
