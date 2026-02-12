@@ -1,3 +1,4 @@
+// src/components/Form.jsx
 import React, { useState } from "react";
 import Input from "./Input";
 import Navbar from "./Navbar";
@@ -8,7 +9,6 @@ const Form = () => {
   const [step, setStep] = useState(0);
   const [submittedStep, setSubmittedStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   // Step 1
@@ -71,26 +71,24 @@ const Form = () => {
     setIsSubmitting(true);
 
     try {
-      const formData = {
-        fullName,
-        email,
-        contactNumber,
-        requestType,
-        agencyName,
-        agencyType,
-        region,
-        province,
-        lgu,
-        addressee,
-        position,
-        address,
-        letterFile: letterFile ? { name: letterFile.name } : null,
-      };
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("contactNumber", contactNumber);
+      formData.append("requestType", JSON.stringify(requestType));
+      formData.append("agencyName", agencyName);
+      formData.append("agencyType", agencyType);
+      formData.append("region", region);
+      formData.append("province", province);
+      formData.append("lgu", lgu);
+      formData.append("addressee", addressee);
+      formData.append("position", position);
+      formData.append("address", address);
+      if (letterFile) formData.append("letterFile", letterFile); // actual file
 
       const res = await fetch("/api/form", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: formData, // browser sets Content-Type automatically
       });
 
       const result = await res.json();
@@ -159,7 +157,9 @@ const Form = () => {
                   label="I consent to the collection and processing of my personal data."
                   value={privacyAccepted}
                   onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                  className={`w-full ${submittedStep >= 1 && !privacyAccepted ? shakeClass : ""}`}
+                  className={`w-full ${
+                    submittedStep >= 1 && !privacyAccepted ? shakeClass : ""
+                  }`}
                   name="privacy_consent_unique"
                   autoComplete="off"
                 />
@@ -334,13 +334,29 @@ const Form = () => {
                     name="address_unique"
                     autoComplete="new-address"
                   />
-                  <Input
-                    type="file"
-                    label="Attach Scanned Letter"
-                    onChange={(e) => setLetterFile(e.target.files[0])}
-                    className={submittedStep >= 3 && !letterFile ? shakeClass : ""}
-                    name="letter_file_unique"
-                  />
+
+                  {/* FILE UPLOAD */}
+                  <div>
+                    <Input
+                      type="file"
+                      label="Attach Scanned Letter"
+                      onChange={(e) => setLetterFile(e.target.files[0])}
+                      className={`${submittedStep >= 3 && !letterFile ? shakeClass : ""}`}
+                      name="letter_file_unique"
+                    />
+                    {letterFile && (
+                      <div className="mt-2 flex items-center justify-between text-sm text-green-700">
+                        <span>Uploaded: {letterFile.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setLetterFile(null)}
+                          className="text-red-600 hover:underline ml-2"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </Section>
 
                 <div className="flex justify-between pt-6">
