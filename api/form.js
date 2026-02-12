@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       delete formData.letterFile; // remove raw file
     }
 
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzfh-bAGGyGgwnW49EUnMb1hdEXiqY5qsWA_Xikk3BXp5ivYafbR7i6LzgXnz7nECEB/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzC6vm-J3mg4xCrOEZtuWb8oMLaOkJNGgacP5ltfGrcHbzHDnDU8FBM9W5uOymi13EP/exec";
 
     const response = await fetch(scriptURL, {
       method: "POST",
