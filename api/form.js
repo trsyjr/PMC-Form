@@ -1,9 +1,6 @@
 // pages/api/form.js
 import { google } from "googleapis";
-import path from "path";
 
-// ---------------- CONFIG ----------------
-const SERVICE_ACCOUNT_FILE = path.join(process.cwd(), "service-account.json");
 const DRIVE_FOLDER_ID = "1k-fm5djppR0hZIFB-xt-AYLDPDi9Dous-1WUV5epOgE"; // Replace with your folder ID
 
 export const config = {
@@ -11,7 +8,6 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  // Preflight for browser
   if (req.method === "OPTIONS") return res.status(200).json({ success: true });
   if (req.method !== "POST")
     return res.status(405).json({ success: false, error: `Method ${req.method} not allowed` });
@@ -19,9 +15,14 @@ export default async function handler(req, res) {
   try {
     const formData = req.body;
 
-    // ---------------- AUTHENTICATE ----------------
+    // ---------------- AUTHENTICATE USING ENV VAR ----------------
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT)
+      throw new Error("Service account credentials not set in environment variables");
+
+    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+
     const auth = new google.auth.GoogleAuth({
-      keyFile: SERVICE_ACCOUNT_FILE,
+      credentials,
       scopes: ["https://www.googleapis.com/auth/drive"],
     });
 
