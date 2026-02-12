@@ -1,11 +1,13 @@
 // pages/api/form.js
 import { google } from "googleapis";
 
-const DRIVE_FOLDER_ID = "1npehkH0_fUMwVuNFJOmFuY-GUXLDm6n-"; // your Drive folder
-const SHEET_ID = "1k-fm5djppR0hZIFB-xt-AYLDPDi9Dous-1WUV5epOgE"; // your Sheet
-const SHEET_NAME = "FormDB";
+const DRIVE_FOLDER_ID = "1npehkH0_fUMwVuNFJOmFuY-GUXLDm6n-"; // Your Drive folder ID
+const SHEET_ID = "1k-fm5djppR0hZIFB-xt-AYLDPDi9Dous-1WUV5epOgE"; // Your Sheet ID
+const SHEET_NAME = "FormDB"; // Tab name
 
-export const config = { api: { bodyParser: true } };
+export const config = {
+  api: { bodyParser: true },
+};
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).json({ success: true });
@@ -52,7 +54,7 @@ export default async function handler(req, res) {
       fileLink = file.data.webViewLink;
     }
 
-    // ---------------- APPEND TO SHEET ----------------
+    // ---------------- APPEND ROW TO SHEET ----------------
     const values = [
       new Date().toISOString(),
       formData.fullName || "",
