@@ -8,6 +8,7 @@ import "./shake.css";
 const Form = () => {
   const [step, setStep] = useState(0);
   const [submittedStep, setSubmittedStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false); // loading state
 
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
@@ -60,15 +61,90 @@ const Form = () => {
     if (validateStep()) setStep(step + 1);
   }, [step, validateStep]);
 
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-    setSubmittedStep(step + 1);
-    if (validateStep()) {
-      alert("Form submitted!");
-    }
-  }, [step, validateStep]);
-
   const handleBack = useCallback(() => setStep(step - 1), [step]);
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setSubmittedStep(step + 1);
+      if (!validateStep()) return;
+
+      setIsSubmitting(true);
+
+      try {
+        // Prepare form data
+        const formData = {
+          fullName,
+          email,
+          contactNumber,
+          requestType,
+          agencyName,
+          agencyType,
+          region,
+          province,
+          lgu,
+          addressee,
+          position,
+          address,
+          letterFile: letterFile ? { name: letterFile.name } : null,
+        };
+
+        // Send to Vercel API
+        const res = await fetch("/api/form", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          alert("Form submitted successfully!");
+          // Reset all fields if needed
+          setStep(0);
+          setSubmittedStep(0);
+          setPrivacyAccepted(false);
+          setFullName("");
+          setEmail("");
+          setContactNumber("");
+          setRequestType([]);
+          setAgencyName("");
+          setAgencyType("");
+          setRegion("");
+          setProvince("");
+          setLgu("");
+          setAddressee("");
+          setPosition("");
+          setAddress("");
+          setLetterFile(null);
+        } else {
+          alert("Error submitting form: " + result.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error submitting form. Please try again.");
+      }
+
+      setIsSubmitting(false);
+    },
+    [
+      step,
+      validateStep,
+      fullName,
+      email,
+      contactNumber,
+      requestType,
+      agencyName,
+      agencyType,
+      region,
+      province,
+      lgu,
+      addressee,
+      position,
+      address,
+      letterFile,
+    ]
+  );
 
   return (
     <>
@@ -90,11 +166,12 @@ const Form = () => {
                 <h2 className="text-center text-[#2e3192] font-bold text-2xl">
                   Data Privacy Consent
                 </h2>
-                <p> By checking the box below, you consent to the collection, use, and processing of your personal data in accordance with the Data Privacy Act. </p>
-                <p className="mt-2"> This information will be used solely for the purposes of processing your request and will not be shared without your consent. </p>
+                <p>By checking the box below, you consent to the collection, use, and processing of your personal data in accordance with the Data Privacy Act.</p>
+                <p className="mt-2">This information will be used solely for the purposes of processing your request and will not be shared without your consent.</p>
+
                 <Input
                   type="checkbox"
-                  label="I consent to the collection and processing of my personal data in accordance with the Data Privacy Act."
+                  label="I consent to the collection and processing of my personal data."
                   value={privacyAccepted}
                   onChange={(e) => setPrivacyAccepted(e.target.checked)}
                   className={`w-full ${submittedStep >= 1 && !privacyAccepted ? shakeClass : ""}`}
@@ -253,7 +330,7 @@ const Form = () => {
                     label="Position of Addressee"
                     value={position}
                     onChange={(e) => setPosition(e.target.value)}
-                    placeholder="Mayor"
+                    placeholder="Ex. Mayor of Antipolo City"
                     className={submittedStep >= 3 && !position ? shakeClass : ""}
                     name="position_unique"
                     autoComplete="new-position"
@@ -280,6 +357,7 @@ const Form = () => {
                   <button
                     onClick={handleBack}
                     className="px-8 py-3 rounded-xl border border-[#2e3192] text-[#2e3192] hover:bg-[#2e3192] hover:text-white transition"
+                    disabled={isSubmitting}
                   >
                     Back
                   </button>
@@ -287,9 +365,10 @@ const Form = () => {
                   <button
                     type="submit"
                     onClick={handleSubmit}
-                    className="px-10 py-3 bg-[#2e3192] text-white rounded-xl hover:bg-[#1f2170] active:scale-95 transition"
+                    disabled={isSubmitting}
+                    className={`px-10 py-3 bg-[#2e3192] text-white rounded-xl hover:bg-[#1f2170] active:scale-95 transition ${isSubmitting ? "cursor-not-allowed opacity-70" : ""}`}
                   >
-                    Submit Request
+                    {isSubmitting ? "Sending..." : "Submit Request"}
                   </button>
                 </div>
               </section>
