@@ -110,7 +110,7 @@ const Form = () => {
       const result = await res.json();
 
       if (res.ok && result.success) {
-        alert(`Form submitted successfully! Ticket ID: ${result.id || "N/A"}`);
+        alert(`Form submitted successfully!`);
         setStep(0);
         setSubmittedStep(0);
         setPrivacyAccepted(false);
