@@ -1,11 +1,8 @@
-// pages/api/form.js
 import { google } from "googleapis";
-import path from "path";
 
-const SERVICE_ACCOUNT_FILE = path.join(process.cwd(), "service-account.json");
-const DRIVE_FOLDER_ID = "1npehkH0_fUMwVuNFJOmFuY-GUXLDm6n-"; // Replace with your folder ID
-const SHEET_ID = "1k-fm5djppR0hZIFB-xt-AYLDPDi9Dous-1WUV5epOgE"; // Replace with your Sheet ID
-const SHEET_NAME = "FormDB"; // The tab name in your sheet
+const DRIVE_FOLDER_ID = "1npehkH0_fUMwVuNFJOmFuY-GUXLDm6n-";
+const SHEET_ID = "1k-fm5djppR0hZIFB-xt-AYLDPDi9Dous-1WUV5epOgE";
+const SHEET_NAME = "FormDB";
 
 export const config = { api: { bodyParser: true } };
 
@@ -19,7 +16,7 @@ export default async function handler(req, res) {
 
     // ---------------- AUTHENTICATE ----------------
     const auth = new google.auth.GoogleAuth({
-      keyFile: SERVICE_ACCOUNT_FILE,
+      credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
       scopes: [
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/spreadsheets",
@@ -42,7 +39,7 @@ export default async function handler(req, res) {
 
       const media = {
         mimeType: formData.letterFileType || "application/octet-stream",
-        body: Buffer.from(buffer),
+        body: buffer,
       };
 
       const file = await drive.files.create({
