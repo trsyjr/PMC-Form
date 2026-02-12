@@ -1,7 +1,8 @@
+// pages/api/form.js
 import { google } from "googleapis";
 
-const DRIVE_FOLDER_ID = "1npehkH0_fUMwVuNFJOmFuY-GUXLDm6n-";
-const SHEET_ID = "1k-fm5djppR0hZIFB-xt-AYLDPDi9Dous-1WUV5epOgE";
+const DRIVE_FOLDER_ID = "1npehkH0_fUMwVuNFJOmFuY-GUXLDm6n-"; // your Drive folder
+const SHEET_ID = "1k-fm5djppR0hZIFB-xt-AYLDPDi9Dous-1WUV5epOgE"; // your Sheet
 const SHEET_NAME = "FormDB";
 
 export const config = { api: { bodyParser: true } };
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
   try {
     const formData = req.body;
 
-    // ---------------- AUTHENTICATE ----------------
+    // ---------------- AUTH ----------------
     const auth = new google.auth.GoogleAuth({
       credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
       scopes: [
@@ -28,7 +29,7 @@ export default async function handler(req, res) {
 
     let fileLink = null;
 
-    // ---------------- UPLOAD FILE ----------------
+    // ---------------- UPLOAD FILE TO DRIVE ----------------
     if (formData.letterFileBase64 && formData.letterFileName) {
       const buffer = Buffer.from(formData.letterFileBase64, "base64");
 
