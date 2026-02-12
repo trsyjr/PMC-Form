@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const formData = req.body;
 
     const scriptURL =
-      "https://script.google.com/macros/s/AKfycbHgyKRCkKY1GUf81hn2dUBwAz5ZBZrrvVV2JNSmVwsjpgt_tmd2IFD3qePqrkaYgqw/exec";
+      "https://script.google.com/macros/s/AKfycbzHgyKRCkKY1GUf81hn2dUBwAz5ZBZrrvVV2JNSmVwsjpgt_tmd2IFD3qePqrkaYgqw/exec";
 
     // Forward the data to Google Apps Script
     const response = await fetch(scriptURL, {
