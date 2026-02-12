@@ -71,19 +71,7 @@ const Form = () => {
     setIsSubmitting(true);
 
     try {
-      let letterFileBase64 = null;
-      let letterFileType = null;
-      if (letterFile) {
-        letterFileType = letterFile.type;
-        const reader = new FileReader();
-        letterFileBase64 = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result.split(",")[1]);
-          reader.onerror = (err) => reject(err);
-          reader.readAsDataURL(letterFile);
-        });
-      }
-
-      const payload = {
+      const formData = {
         fullName,
         email,
         contactNumber,
@@ -96,21 +84,30 @@ const Form = () => {
         addressee,
         position,
         address,
-        letterFileBase64,
-        letterFileName: letterFile?.name || "",
-        letterFileType
       };
 
-      const res = await fetch("https://script.google.com/macros/s/AKfycbzHgyKRCkKY1GUf81hn2dUBwAz5ZBZrrvVV2JNSmVwsjpgt_tmd2IFD3qePqrkaYgqw/exec", {
+      // ---------------- Convert File to Base64 ----------------
+      if (letterFile) {
+        const arrayBuffer = await letterFile.arrayBuffer();
+        formData.letterFileBase64 = btoa(
+          new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+        );
+        formData.letterFileName = letterFile.name;
+        formData.letterFileType = letterFile.type || "application/octet-stream";
+      }
+
+      const res = await fetch("/api/form", {
         method: "POST",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
       const result = await res.json();
 
-      if (res.ok && result.success) {
-        alert(`Form submitted successfully!`);
+      if (result.success) {
+        alert(`Form submitted successfully! Ticket ID: ${result.id || "N/A"}`);
+
+        // Reset all fields
         setStep(0);
         setSubmittedStep(0);
         setPrivacyAccepted(false);
@@ -226,11 +223,7 @@ const Form = () => {
                 </Section>
 
                 <Section title="Type of Request">
-                  <div
-                    className={`flex flex-wrap gap-6 ${
-                      submittedStep >= 2 && requestType.length === 0 ? shakeClass : ""
-                    }`}
-                  >
+                  <div className={`flex flex-wrap gap-6 ${submittedStep >= 2 && requestType.length === 0 ? shakeClass : ""}`}>
                     {["Inclusion", "Localized"].map((option) => (
                       <label key={option} className="flex items-center space-x-2">
                         <input
@@ -240,7 +233,8 @@ const Form = () => {
                           onChange={(e) => {
                             if (e.target.checked)
                               setRequestType([...requestType, option]);
-                            else setRequestType(requestType.filter((i) => i !== option));
+                            else
+                              setRequestType(requestType.filter((i) => i !== option));
                           }}
                           className="w-4 h-4 accent-[#2e3192]"
                         />
